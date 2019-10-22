@@ -6,7 +6,10 @@ import org.reveno.atp.test.utils.FileUtils;
 import org.reveno.atp.test.utils.LongUtils;
 import org.reveno.atp.utils.MapUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,7 +20,15 @@ public class SnapshottingExample {
 
     public static void main(String[] args) throws Exception {
         //System.setProperty("protostuff.runtime.collection_schema_on_repeated_fields", "true");
-
+        Files.list(new File(args[0]).toPath()).forEach(v -> {
+            if (v.toFile().isFile()) {
+                try {
+                    Files.delete(v);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         Reveno reveno = initReveno(args);
         reveno.startup();
 

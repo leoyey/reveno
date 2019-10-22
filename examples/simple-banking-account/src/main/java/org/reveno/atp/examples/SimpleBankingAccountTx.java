@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Currency;
-import java.util.concurrent.ExecutionException;
 
-public class SimpleBankingAccount {
+public class SimpleBankingAccountTx {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(SimpleBankingAccount.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SimpleBankingAccountTx.class);
 
     public static Reveno init(String folder) {
         Reveno reveno = new Engine(folder);
@@ -44,10 +44,20 @@ public class SimpleBankingAccount {
         Reveno reveno = init(args[0]);
         reveno.startup();
 
-        long id = reveno.executeSync(new CreateAccount("John", Currency.getInstance("EUR")));
-        reveno.executeSync(new AddToBalanceCommand(id, 10000, Currency.getInstance("USD")));
-
+        long id = reveno.executeSync(new CreateAccount("John", Currency.getInstance("USD")));
+        reveno.executeCommand(new AddToBalanceCommand(id, 10000, Currency.getInstance("USD"))).get();
         printStats(reveno, id);
+
+        reveno.executeCommand(new AddToBalanceCommand(id, 1500, Currency.getInstance("USD"))).get();
+        printStats(reveno, id);
+
+        reveno.executeCommand(new AddToBalanceCommand(id, 1000, Currency.getInstance("USD"))).get();
+        printStats(reveno, id);
+
+        reveno.performCommands(Arrays.asList(new AddToBalanceCommand[] { new AddToBalanceCommand(id, 1000, Currency.getInstance("USD")), new AddToBalanceCommand(id, 1500, Currency.getInstance("USD")) })).get();
+        printStats(reveno, id);
+
+        System.in.read();
 
         reveno.shutdown();
         reveno = init(args[0]);
@@ -134,6 +144,9 @@ public class SimpleBankingAccount {
 
         public static void handler(AddToBalance tx, TransactionContext ctx) {
             ctx.repo().remap(tx.accountId, Account.class, (id, a) -> a.add(tx.amount));
+            if (tx.amount == 1500) {
+                throw new IllegalArgumentException("1500 Amount!");
+            }
         }
     }
 

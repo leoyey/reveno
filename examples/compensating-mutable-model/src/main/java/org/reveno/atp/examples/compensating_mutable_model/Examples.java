@@ -7,11 +7,24 @@ import org.reveno.atp.utils.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 public class Examples {
 
     protected static final Logger LOG = LoggerFactory.getLogger(Examples.class);
 
     public static void main(String[] args) throws Exception {
+        Files.list(new File(args[0]).toPath()).forEach(v -> {
+            if (v.toFile().isFile()) {
+                try {
+                    Files.delete(v);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         Reveno reveno = new Engine(args[0]);
         reveno.config().mutableModel();
         reveno.config().mutableModelFailover(Configuration.MutableModelFailover.COMPENSATING_ACTIONS);
@@ -57,6 +70,10 @@ public class Examples {
         reveno.executeCommand(new AddToBalance(acc, 100500)).get();
         wrongCommandBalance = reveno.query().find(AccountView.class, acc).balance;
         LOG.info("Balance after wrong command: {}", wrongCommandBalance);
+
+        reveno.executeCommand(new AddToBalance(acc, 7)).get();
+        wrongCommandBalance = reveno.query().find(AccountView.class, acc).balance;
+        LOG.info("Balance after wrong command1: {}", wrongCommandBalance);
 
         reveno.shutdown();
     }
