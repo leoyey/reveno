@@ -60,23 +60,26 @@ public class TransactionExecutor {
     }
 
     protected void rollback(WorkflowContext services, ProcessorContext c) {
-        if (services.configuration().modelType() == ModelType.MUTABLE &&
-                services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS) {
+//        if (services.configuration().modelType() == ModelType.MUTABLE &&
+//                services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS) {
+        if (services.configuration().modelType() == ModelType.IMMUTABLE || services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS) {
             services.repository().rollback();
         } else {
-            compensateTransactions(services, c.getTransactions().listIterator(c.getTransactions().size() - 1));
+            compensateTransactions(services, c.getTransactions().listIterator(c.getTransactions().size()));
         }
     }
 
     protected void commit(WorkflowContext services) {
-        if (services.configuration().modelType() == ModelType.MUTABLE &&
-                services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS)
+//        if (services.configuration().modelType() == ModelType.MUTABLE &&
+//                services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS)
+        if (services.configuration().modelType() == ModelType.IMMUTABLE || services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS)
             services.repository().commit();
     }
 
     protected void begin(WorkflowContext services) {
-        if (services.configuration().modelType() == ModelType.MUTABLE &&
-                services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS)
+//        if (services.configuration().modelType() == ModelType.MUTABLE &&
+//                services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS)
+        if (services.configuration().modelType() == ModelType.IMMUTABLE || services.configuration().mutableModelFailover() == MutableModelFailover.SNAPSHOTS)
             services.repository().begin();
     }
 
